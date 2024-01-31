@@ -78,7 +78,7 @@ def get_params(opt, size):
     return {'crop_pos': (x, y), 'flip': flip}
 
 
-def get_transform(opt, params=None, grayscale=False, method=transforms.InterpolationMode.BICUBIC, convert=True):
+def get_transform(opt, params=None, grayscale=False, method=transforms.InterpolationMode.BICUBIC, convert=True, isB=False):
     transform_list = []
     if grayscale:
         transform_list.append(transforms.Grayscale(1))
@@ -94,8 +94,8 @@ def get_transform(opt, params=None, grayscale=False, method=transforms.Interpola
         else:
             transform_list.append(transforms.Lambda(lambda img: __crop(img, params['crop_pos'], opt.crop_size)))
 
-    if opt.preprocess == 'none':
-        transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=4, method=method)))
+    # if opt.preprocess == 'none':
+    #     transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=4, method=method)))
 
     if not opt.no_flip:
         if params is None:
@@ -108,7 +108,13 @@ def get_transform(opt, params=None, grayscale=False, method=transforms.Interpola
         if grayscale:
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:
-            transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+            if isB:
+                transform_list += [transforms.Normalize((0.5, 0.5, 0.5, 0.5),
+                                                        (0.5, 0.5, 0.5, 0.5))]
+            else:
+                transform_list += [transforms.Normalize((0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
+                                                        (0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5))]
+    print(transform_list)
     return transforms.Compose(transform_list)
 
 
@@ -116,7 +122,7 @@ def __transforms2pil_resize(method):
     mapper = {transforms.InterpolationMode.BILINEAR: Image.BILINEAR,
               transforms.InterpolationMode.BICUBIC: Image.BICUBIC,
               transforms.InterpolationMode.NEAREST: Image.NEAREST,
-              transforms.InterpolationMode.LANCZOS: Image.LANCZOS,}
+              transforms.InterpolationMode.LANCZOS: Image.LANCZOS, }
     return mapper[method]
 
 
